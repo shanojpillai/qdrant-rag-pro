@@ -223,13 +223,21 @@ class HybridSearchEngine:
                     )
                 # List filter: {"category": {"in": ["tech", "business"]}}
                 elif "in" in value:
+                    # Create OR conditions for list items
+                    list_conditions = []
                     for item in value["in"]:
-                        conditions.append(
+                        list_conditions.append(
                             FieldCondition(
                                 key=f"metadata.{key}",
                                 match=MatchValue(value=item)
                             )
                         )
+                    # Add as OR conditions (should)
+                    if list_conditions:
+                        if len(list_conditions) == 1:
+                            conditions.append(list_conditions[0])
+                        else:
+                            conditions.append(Filter(should=list_conditions))
             else:
                 # Exact match filter
                 conditions.append(

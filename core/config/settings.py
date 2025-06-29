@@ -5,10 +5,9 @@ This module provides centralized configuration management using Pydantic setting
 with environment variable support and validation.
 """
 
-import os
-from typing import Optional, List
-from pydantic import BaseSettings, Field, validator
-from pathlib import Path
+from typing import Optional
+from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -62,46 +61,52 @@ class Settings(BaseSettings):
         env_file_encoding = "utf-8"
         case_sensitive = False
         
-    @validator("default_vector_weight", "default_keyword_weight")
+    @field_validator("default_vector_weight", "default_keyword_weight")
+    @classmethod
     def validate_weights(cls, v):
         """Ensure weights are between 0 and 1."""
         if not 0 <= v <= 1:
             raise ValueError("Weights must be between 0 and 1")
         return v
-    
-    @validator("log_level")
+
+    @field_validator("log_level")
+    @classmethod
     def validate_log_level(cls, v):
         """Ensure log level is valid."""
         valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
         if v.upper() not in valid_levels:
             raise ValueError(f"Log level must be one of {valid_levels}")
         return v.upper()
-    
-    @validator("environment")
+
+    @field_validator("environment")
+    @classmethod
     def validate_environment(cls, v):
         """Ensure environment is valid."""
         valid_envs = ["development", "staging", "production"]
         if v.lower() not in valid_envs:
             raise ValueError(f"Environment must be one of {valid_envs}")
         return v.lower()
-    
+
     @property
     def qdrant_url(self) -> str:
         """Get the full Qdrant URL."""
         return f"http://{self.qdrant_host}:{self.qdrant_port}"
-    
+
     @property
     def redis_url(self) -> str:
         """Get the full Redis URL."""
         if self.redis_password:
-            return f"redis://:{self.redis_password}@{self.redis_host}:{self.redis_port}/{self.redis_db}"
+            return (
+                f"redis://:{self.redis_password}@{self.redis_host}:"
+                f"{self.redis_port}/{self.redis_db}"
+            )
         return f"redis://{self.redis_host}:{self.redis_port}/{self.redis_db}"
-    
+
     @property
     def is_production(self) -> bool:
         """Check if running in production environment."""
         return self.environment == "production"
-    
+
     @property
     def is_development(self) -> bool:
         """Check if running in development environment."""

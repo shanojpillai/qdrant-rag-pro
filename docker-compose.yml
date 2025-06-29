@@ -38,14 +38,12 @@ services:
 
   # Optional: Jupyter notebook service
   jupyter:
-    build:
-      context: .
-      dockerfile: Dockerfile.jupyter
+    image: jupyter/scipy-notebook:latest
     container_name: qdrant-rag-jupyter
     ports:
       - "8888:8888"
     volumes:
-      - .:/workspace
+      - .:/home/jovyan/work
       - jupyter_data:/home/jovyan/.jupyter
     environment:
       - JUPYTER_ENABLE_LAB=yes

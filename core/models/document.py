@@ -6,7 +6,7 @@ used throughout the RAG system.
 """
 
 from typing import List, Dict, Any, Optional, Union
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from datetime import datetime
 from enum import Enum
 
@@ -64,12 +64,14 @@ class DocumentMetadata(BaseModel):
     # Custom metadata
     custom_fields: Dict[str, Any] = Field(default_factory=dict, description="Custom metadata fields")
     
-    @validator("tags")
+    @field_validator("tags")
+    @classmethod
     def validate_tags(cls, v):
         """Ensure tags are non-empty strings."""
         return [tag.strip() for tag in v if tag.strip()]
-    
-    @validator("language")
+
+    @field_validator("language")
+    @classmethod
     def validate_language(cls, v):
         """Ensure language code is valid."""
         # Basic validation for common language codes
@@ -106,40 +108,34 @@ class Document(BaseModel):
     token_count: Optional[int] = Field(None, description="Total token count")
     chunk_token_counts: Optional[List[int]] = Field(None, description="Token count per chunk")
     
-    @validator("content")
+    @field_validator("content")
+    @classmethod
     def validate_content(cls, v):
         """Ensure content is not empty."""
         if not v or not v.strip():
             raise ValueError("Document content cannot be empty")
         return v.strip()
-    
-    @validator("chunks")
-    def validate_chunks(cls, v, values):
+
+    @model_validator(mode='after')
+    def validate_chunks_consistency(self):
         """Validate chunks consistency."""
-        if v is not None:
+        if self.chunks is not None:
             # Ensure chunks are non-empty
-            v = [chunk.strip() for chunk in v if chunk.strip()]
-            if not v:
-                return None
-        return v
-    
-    @validator("chunk_embeddings")
-    def validate_chunk_embeddings(cls, v, values):
-        """Ensure chunk embeddings match chunks."""
-        chunks = values.get("chunks")
-        if v is not None and chunks is not None:
-            if len(v) != len(chunks):
+            self.chunks = [chunk.strip() for chunk in self.chunks if chunk.strip()]
+            if not self.chunks:
+                self.chunks = None
+
+        # Validate chunk embeddings match chunks
+        if self.chunk_embeddings is not None and self.chunks is not None:
+            if len(self.chunk_embeddings) != len(self.chunks):
                 raise ValueError("Number of chunk embeddings must match number of chunks")
-        return v
-    
-    @validator("chunk_token_counts")
-    def validate_chunk_token_counts(cls, v, values):
-        """Ensure chunk token counts match chunks."""
-        chunks = values.get("chunks")
-        if v is not None and chunks is not None:
-            if len(v) != len(chunks):
+
+        # Validate chunk token counts match chunks
+        if self.chunk_token_counts is not None and self.chunks is not None:
+            if len(self.chunk_token_counts) != len(self.chunks):
                 raise ValueError("Number of chunk token counts must match number of chunks")
-        return v
+
+        return self
     
     @property
     def has_chunks(self) -> bool:

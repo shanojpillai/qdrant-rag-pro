@@ -84,7 +84,12 @@ class EmbeddingService:
         self.settings = settings
         self.client = openai.OpenAI(api_key=settings.openai_api_key)
         self.model = settings.embedding_model
-        self.encoding = tiktoken.encoding_for_model("gpt-4")  # Use GPT-4 encoding as fallback
+        # Use cl100k_base encoding which is used by text-embedding models
+        try:
+            self.encoding = tiktoken.encoding_for_model(self.model)
+        except KeyError:
+            # Fallback to cl100k_base encoding for embedding models
+            self.encoding = tiktoken.get_encoding("cl100k_base")
         self.max_tokens = settings.max_tokens_per_chunk
         self.batch_size = settings.batch_size
         self.logger = logging.getLogger(__name__)

@@ -6,7 +6,7 @@ retrieval, and management with automatic embedding generation and metadata handl
 """
 
 from typing import List, Dict, Any, Optional, Union
-from qdrant_client.models import PointStruct, Filter
+from qdrant_client.models import PointStruct, Filter, FieldCondition, Range, MatchValue
 import uuid
 import logging
 import hashlib
@@ -294,7 +294,6 @@ class DocumentStore:
             if isinstance(value, dict):
                 # Range filter
                 if "gte" in value or "lte" in value:
-                    from qdrant_client.models import FieldCondition, Range
                     conditions.append(
                         FieldCondition(
                             key=f"metadata.{key}",
@@ -306,7 +305,6 @@ class DocumentStore:
                     )
                 # List filter
                 elif "in" in value:
-                    from qdrant_client.models import FieldCondition, MatchValue
                     for item in value["in"]:
                         conditions.append(
                             FieldCondition(
@@ -316,7 +314,6 @@ class DocumentStore:
                         )
             else:
                 # Exact match
-                from qdrant_client.models import FieldCondition, MatchValue
                 conditions.append(
                     FieldCondition(
                         key=f"metadata.{key}",

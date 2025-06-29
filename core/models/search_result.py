@@ -6,7 +6,7 @@ used in the hybrid search and response generation systems.
 """
 
 from typing import List, Dict, Any, Optional
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from datetime import datetime
 from enum import Enum
 
@@ -53,14 +53,16 @@ class SearchResult(BaseModel):
     retrieved_at: datetime = Field(default_factory=datetime.now, description="Retrieval timestamp")
     processing_time: Optional[float] = Field(None, description="Processing time in seconds")
     
-    @validator("vector_score", "keyword_score", "combined_score")
+    @field_validator("vector_score", "keyword_score", "combined_score")
+    @classmethod
     def validate_scores(cls, v):
         """Ensure scores are between 0 and 1."""
         if not 0 <= v <= 1:
             raise ValueError("Scores must be between 0 and 1")
         return v
-    
-    @validator("content")
+
+    @field_validator("content")
+    @classmethod
     def validate_content(cls, v):
         """Ensure content is not empty."""
         if not v or not v.strip():
@@ -138,38 +140,40 @@ class ResponseAnalysis(BaseModel):
     query: Optional[str] = Field(None, description="Original query")
     search_results_count: Optional[int] = Field(None, description="Number of search results used")
     
-    @validator("confidence_score", "source_coverage")
+    @field_validator("confidence_score", "source_coverage")
+    @classmethod
     def validate_percentages(cls, v):
         """Ensure percentage values are between 0 and 1."""
         if not 0 <= v <= 1:
             raise ValueError("Percentage values must be between 0 and 1")
         return v
-    
-    @validator("answer")
+
+    @field_validator("answer")
+    @classmethod
     def validate_answer(cls, v):
         """Ensure answer is not empty."""
         if not v or not v.strip():
             raise ValueError("Answer cannot be empty")
         return v.strip()
-    
-    @validator("confidence_level", pre=True)
-    def set_confidence_level(cls, v, values):
+
+    @model_validator(mode='after')
+    def set_confidence_level(self):
         """Automatically set confidence level based on confidence score."""
-        if isinstance(v, str):
-            return v
-        
-        confidence_score = values.get("confidence_score", 0)
-        
-        if confidence_score >= 0.9:
-            return ConfidenceLevel.VERY_HIGH
-        elif confidence_score >= 0.75:
-            return ConfidenceLevel.HIGH
-        elif confidence_score >= 0.5:
-            return ConfidenceLevel.MEDIUM
-        elif confidence_score >= 0.25:
-            return ConfidenceLevel.LOW
+        if isinstance(self.confidence_level, str):
+            return self
+
+        if self.confidence_score >= 0.9:
+            self.confidence_level = ConfidenceLevel.VERY_HIGH
+        elif self.confidence_score >= 0.75:
+            self.confidence_level = ConfidenceLevel.HIGH
+        elif self.confidence_score >= 0.5:
+            self.confidence_level = ConfidenceLevel.MEDIUM
+        elif self.confidence_score >= 0.25:
+            self.confidence_level = ConfidenceLevel.LOW
         else:
-            return ConfidenceLevel.VERY_LOW
+            self.confidence_level = ConfidenceLevel.VERY_LOW
+
+        return self
     
     @property
     def is_high_confidence(self) -> bool:
