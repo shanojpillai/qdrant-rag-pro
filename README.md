@@ -775,27 +775,6 @@ pip install pytest black flake8
 pytest tests/
 ```
 
-## 📖 Documentation
-
-### 🎯 Core Concepts
-
-- **[Hybrid Search](docs/hybrid-search.md)**: Understanding vector + keyword search
-- **[Response Generation](docs/response-generation.md)**: AI-powered answer synthesis
-- **[Configuration Guide](docs/configuration.md)**: Customizing for your use case
-- **[Performance Tuning](docs/performance.md)**: Optimization strategies
-
-### 🔧 API Reference
-
-- **[Search Engine API](docs/api/search-engine.md)**: Search functionality
-- **[Document Store API](docs/api/document-store.md)**: Document management
-- **[Embedding Service API](docs/api/embedding-service.md)**: Embedding operations
-
-### 📊 Analytics & Monitoring
-
-- **[Performance Metrics](docs/analytics/performance.md)**: Key performance indicators
-- **[Quality Assessment](docs/analytics/quality.md)**: Response quality metrics
-- **[System Monitoring](docs/analytics/monitoring.md)**: Health and observability
-
 ## 🤝 Contributing
 
 We welcome contributions! Here's how you can help:
