@@ -1,0 +1,85 @@
+{
+  "repository": "shanojpillai/qdrant-rag-pro",
+  "issues": [
+    {
+      "title": "[BUG] Pydantic Version Incompatibility - BaseSettings Import Error",
+      "body": "## \ud83d\udc1b Bug Description\nCritical import error due to using deprecated `BaseSettings` import from `pydantic` instead of `pydantic_settings`.\n\n## \ud83d\udccd Location\n- File: `core/config/settings.py`\n- Line: 9\n\n## \ud83d\udd0d Root Cause\nPydantic v2 moved `BaseSettings` to a separate package `pydantic-settings`, but the code was still importing from the old location.\n\n## \ud83d\udca5 Impact\n- **Severity**: Critical\n- **Effect**: Application fails to start\n- **Error**: `ImportError: cannot import name 'BaseSettings' from 'pydantic'`\n\n## \ud83d\udd27 Fix Applied\n```python\n# Before (broken)\nfrom pydantic import BaseSettings\n\n# After (fixed)  \nfrom pydantic_settings import BaseSettings\n```\n\nAlso added `pydantic-settings==2.1.0` to requirements.txt\n\n## \u2705 Resolution\nFixed in commit: 58b4048\nStatus: Resolved",
+      "labels": [
+        "bug",
+        "critical",
+        "dependencies"
+      ],
+      "state": "closed"
+    },
+    {
+      "title": "[BUG] Incorrect Tiktoken Encoding for Embedding Models",
+      "body": "## \ud83d\udc1b Bug Description\nUsing GPT-4 encoding for text-embedding models causes token count mismatches and potential processing errors.\n\n## \ud83d\udccd Location\n- File: `core/services/embedding_service.py`\n- Line: 87\n\n## \ud83d\udd0d Root Cause\nThe code hardcoded GPT-4 encoding instead of using the appropriate encoding for the embedding model.\n\n## \ud83d\udca5 Impact\n- **Severity**: High\n- **Effect**: Incorrect token counting, potential chunking issues\n- **Models Affected**: text-embedding-3-small, text-embedding-3-large\n\n## \ud83d\udd27 Fix Applied\n```python\n# Before (incorrect)\nself.encoding = tiktoken.encoding_for_model(\"gpt-4\")\n\n# After (correct)\ntry:\n    self.encoding = tiktoken.encoding_for_model(self.model)\nexcept KeyError:\n    self.encoding = tiktoken.get_encoding(\"cl100k_base\")\n```\n\n## \u2705 Resolution\nFixed in commit: 58b4048\nStatus: Resolved",
+      "labels": [
+        "bug",
+        "high",
+        "embedding"
+      ],
+      "state": "closed"
+    },
+    {
+      "title": "[BUG] Incorrect Qdrant Filter Logic for List Conditions",
+      "body": "## \ud83d\udc1b Bug Description\nList filters incorrectly use AND logic instead of OR logic, causing overly restrictive search results.\n\n## \ud83d\udccd Location\n- File: `core/services/search_engine.py`\n- Lines: 224-232\n\n## \ud83d\udd0d Root Cause\nMultiple `must` conditions were added for list items instead of using `should` conditions for OR logic.\n\n## \ud83d\udca5 Impact\n- **Severity**: High\n- **Effect**: Search filters don't work as expected\n- **Example**: Searching for `category: [\"tech\", \"science\"]` returns no results instead of documents matching either category\n\n## \ud83d\udd27 Fix Applied\n```python\n# Before (incorrect - AND logic)\nfor item in value[\"in\"]:\n    conditions.append(FieldCondition(...))\n\n# After (correct - OR logic)\nlist_conditions = [FieldCondition(...) for item in value[\"in\"]]\nif len(list_conditions) == 1:\n    conditions.append(list_conditions[0])\nelse:\n    conditions.append(Filter(should=list_conditions))\n```\n\n## \u2705 Resolution\nFixed in commit: 58b4048\nStatus: Resolved",
+      "labels": [
+        "bug",
+        "high",
+        "search",
+        "filtering"
+      ],
+      "state": "closed"
+    },
+    {
+      "title": "[BUG] Performance Issue - Runtime Imports in Functions",
+      "body": "## \ud83d\udc1b Bug Description\nImports inside functions cause unnecessary performance overhead and violate Python best practices.\n\n## \ud83d\udccd Location\n- File: `core/database/document_store.py`\n- Lines: 297, 308, 317\n\n## \ud83d\udd0d Root Cause\nQdrant model imports were placed inside the `_build_filter` method instead of at module level.\n\n## \ud83d\udca5 Impact\n- **Severity**: Medium\n- **Effect**: Performance degradation on repeated filter operations\n- **Best Practice Violation**: PEP 8 recommends module-level imports\n\n## \ud83d\udd27 Fix Applied\n```python\n# Before (inefficient)\ndef _build_filter(self, filters):\n    from qdrant_client.models import FieldCondition, Range\n\n# After (efficient)\nfrom qdrant_client.models import FieldCondition, Range, MatchValue\n```\n\n## \u2705 Resolution\nFixed in commit: 58b4048\nStatus: Resolved",
+      "labels": [
+        "bug",
+        "medium",
+        "performance"
+      ],
+      "state": "closed"
+    },
+    {
+      "title": "[BUG] Missing Docker Configuration - Jupyter Service Fails",
+      "body": "## \ud83d\udc1b Bug Description\nDocker-compose references non-existent `Dockerfile.jupyter`, preventing Jupyter service from starting.\n\n## \ud83d\udccd Location\n- File: `docker-compose.yml`\n- Lines: 42-44\n\n## \ud83d\udd0d Root Cause\nThe compose file referenced a custom Dockerfile that was never created.\n\n## \ud83d\udca5 Impact\n- **Severity**: Medium\n- **Effect**: `docker-compose up jupyter` fails\n- **Error**: `unable to prepare context: unable to evaluate symlinks in Dockerfile path`\n\n## \ud83d\udd27 Fix Applied\n```yaml\n# Before (broken)\njupyter:\n  build:\n    context: .\n    dockerfile: Dockerfile.jupyter\n\n# After (working)\njupyter:\n  image: jupyter/scipy-notebook:latest\n```\n\n## \u2705 Resolution\nFixed in commit: 58b4048\nStatus: Resolved",
+      "labels": [
+        "bug",
+        "medium",
+        "docker",
+        "jupyter"
+      ],
+      "state": "closed"
+    },
+    {
+      "title": "[BUG] Pydantic v2 Validator Syntax Incompatibility",
+      "body": "## \ud83d\udc1b Bug Description\nUsing deprecated Pydantic v1 `@validator` syntax causes compatibility issues with Pydantic v2.5.3.\n\n## \ud83d\udccd Location\n- Files: `core/models/document.py`, `core/models/search_result.py`, `core/config/settings.py`\n- Multiple validator decorators throughout\n\n## \ud83d\udd0d Root Cause\nPydantic v2 changed validator syntax from `@validator` to `@field_validator` and `@model_validator`.\n\n## \ud83d\udca5 Impact\n- **Severity**: Critical\n- **Effect**: Model validation fails, runtime errors\n- **Error**: `NameError: name 'validator' is not defined`\n\n## \ud83d\udd27 Fix Applied\n```python\n# Before (v1 syntax)\n@validator(\"field_name\")\ndef validate_field(cls, v):\n    return v\n\n# After (v2 syntax)\n@field_validator(\"field_name\")\n@classmethod\ndef validate_field(cls, v):\n    return v\n\n# For cross-field validation\n@model_validator(mode='after')\ndef validate_model(self):\n    return self\n```\n\n## \u2705 Resolution\nFixed in commit: 58b4048\nStatus: Resolved",
+      "labels": [
+        "bug",
+        "critical",
+        "pydantic",
+        "validation"
+      ],
+      "state": "closed"
+    },
+    {
+      "title": "[BUG] Deprecated Matplotlib Style Warning",
+      "body": "## \ud83d\udc1b Bug Description\nUsing deprecated `seaborn-v0_8` matplotlib style causes warnings and potential compatibility issues.\n\n## \ud83d\udccd Location\n- File: `notebooks/rag_analysis.ipynb`\n- Cell: Plotting setup\n\n## \ud83d\udd0d Root Cause\nThe notebook used an old matplotlib style name that's deprecated in newer versions.\n\n## \ud83d\udca5 Impact\n- **Severity**: Low\n- **Effect**: Deprecation warnings, potential future incompatibility\n- **Warning**: `UserWarning: The seaborn-v0_8 style is deprecated`\n\n## \ud83d\udd27 Fix Applied\n```python\n# Before (deprecated)\nplt.style.use('seaborn-v0_8')\n\n# After (compatible)\nplt.style.use('default')\n```\n\n## \u2705 Resolution\nFixed in commit: 58b4048\nStatus: Resolved",
+      "labels": [
+        "bug",
+        "low",
+        "matplotlib",
+        "notebook"
+      ],
+      "state": "closed"
+    }
+  ],
+  "metadata": {
+    "created_date": "2025-06-29T12:11:19.303874",
+    "total_bugs": 7,
+    "fix_commit": "58b4048",
+    "status": "all_resolved"
+  }
+}
