@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.7.0
+    container_name: qdrant-rag-pro
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+      - QDRANT__LOG_LEVEL=INFO
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-rag-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: Jupyter notebook service
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile.jupyter
+    container_name: qdrant-rag-jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/workspace
+      - jupyter_data:/home/jovyan/.jupyter
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=qdrant-rag-token
+    depends_on:
+      - qdrant
+      - redis
+    restart: unless-stopped
+    profiles:
+      - jupyter
+
+volumes:
+  qdrant_storage:
+    driver: local
+  redis_data:
+    driver: local
+  jupyter_data:
+    driver: local
+
+networks:
+  default:
+    name: qdrant-rag-network

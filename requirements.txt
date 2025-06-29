@@ -1,0 +1,36 @@
+# Core Dependencies
+qdrant-client==1.7.0
+openai==1.12.0
+instructor==0.4.8
+pydantic==2.5.3
+python-dotenv==1.0.0
+
+# Data Processing
+tiktoken==0.5.2
+numpy==1.24.3
+pandas==2.1.4
+
+# Async Support
+aiohttp==3.9.1
+asyncio-throttle==1.0.2
+
+# Development and Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+jupyter==1.0.0
+notebook==7.0.6
+
+# Optional: FastAPI for API endpoints
+fastapi==0.104.1
+uvicorn==0.24.0
+
+# Logging and Monitoring
+structlog==23.2.0
+rich==13.7.0
+
+# Text Processing
+nltk==3.8.1
+spacy==3.7.2
+
+# Caching (optional)
+redis==5.0.1
