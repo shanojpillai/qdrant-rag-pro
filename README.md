@@ -13,7 +13,7 @@
 
 *Building the future of intelligent document retrieval with hybrid search and AI-powered responses*
 
-[🚀 Quick Start](#-quick-start) • [📖 Documentation](#-documentation) • [🎯 Features](#-key-features) • [🛠️ Installation](#️-installation) • [💡 Examples](#-examples) • [🤝 Contributing](#-contributing)
+[🚀 Quick Start](#-quick-start) •  [🎯 Features](#-key-features) • [🛠️ Installation](#️-installation) • [💡 Examples](#-examples) • [🤝 Contributing](#-contributing)
 
 </div>
 
@@ -819,13 +819,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **[OpenAI](https://openai.com/)** - Powerful embedding and language models
 - **[Instructor](https://github.com/jxnl/instructor)** - Structured LLM outputs
 - **[Rich](https://github.com/Textualize/rich)** - Beautiful terminal interfaces
-
-## 📞 Support
-
-- 📧 **Email**: [your-email@example.com](mailto:your-email@example.com)
-- 💬 **Discord**: [Join our community](https://discord.gg/your-discord)
-- 🐦 **Twitter**: [@your-twitter](https://twitter.com/your-twitter)
-- 💼 **LinkedIn**: [Your LinkedIn](https://linkedin.com/in/your-profile)
 
 ---
 
