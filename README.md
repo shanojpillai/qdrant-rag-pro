@@ -809,10 +809,6 @@ black core/ scripts/ tests/
 - Add examples and tutorials
 - Fix typos and clarify explanations
 
-## 🌟 Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=shanojpillai/qdrant-rag-pro&type=Date)](https://star-history.com/#shanojpillai/qdrant-rag-pro&Date)
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
