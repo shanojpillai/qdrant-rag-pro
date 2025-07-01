@@ -826,7 +826,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **🌟 If this project helped you, please consider giving it a star! 🌟**
 
-**Built with ❤️ by the QdrantRAG-Pro team**
+**Built with ❤️ by the Shanoj**
 
 [⬆ Back to Top](#-qdrantrag-pro-production-ready-rag-system)
 
